@@ -1,5 +1,5 @@
-import React, {useEffect} from "react";
-import { useFormik } from "formik";
+import React, { useEffect } from 'react';
+import { useFormik } from 'formik';
 import {
   Box,
   Button,
@@ -11,37 +11,46 @@ import {
   Select,
   Textarea,
   VStack,
-} from "@chakra-ui/react";
+} from '@chakra-ui/react';
 import * as Yup from 'yup';
-import FullScreenSection from "./FullScreenSection";
-import useSubmit from "../hooks/useSubmit";
-import {useAlertContext} from "../context/alertContext";
+import FullScreenSection from './FullScreenSection';
+import useSubmit from '../hooks/useSubmit';
+import { useAlertContext } from '../context/alertContext';
 
-const LandingSection = () => {
-  const {isLoading, response, submit} = useSubmit();
+/**
+ * Covers a complete form implementation using formik and yup for validation
+ */
+const ContactMeSection = () => {
+  const { isLoading, response, submit } = useSubmit();
   const { onOpen } = useAlertContext();
 
   const formik = useFormik({
     initialValues: {
-      firstName: "",
-      email: "",
-      type:"hireMe",
-      Comment: "",
+      firstName: '',
+      email: '',
+      type: 'hireMe',
+      comment: '',
     },
     onSubmit: (values) => {
-      // alert(JSON.stringify(values, null, 2));
-      submit("url",values); 
-      onOpen(response.type, response.message);
-      formik.resetForm();
+      submit('https://john.com/contactme', values);
     },
-
-    validationSchema: Yup.object().shape({
-      firstName: Yup.string().min(2, "Too Short").required(),
-      email: Yup.string().email().required("Please enter a valid email"),
-      type: Yup.string(),
-      Comment: Yup.string().required("Please enter a comment"),
+    validationSchema: Yup.object({
+      firstName: Yup.string().required('Required'),
+      email: Yup.string().email('Invalid email address').required('Required'),
+      comment: Yup.string()
+        .min(25, 'Must be at least 25 characters')
+        .required('Required'),
     }),
   });
+
+  useEffect(() => {
+    if (response) {
+      onOpen(response.type, response.message);
+      if (response.type === 'success') {
+        formik.resetForm();
+      }
+    }
+  }, [response]);
 
   return (
     <FullScreenSection
@@ -49,7 +58,6 @@ const LandingSection = () => {
       backgroundColor="#512DA8"
       py={16}
       spacing={8}
-
     >
       <VStack w="1024px" p={32} alignItems="flex-start">
         <Heading as="h1" id="contactme-section">
@@ -58,30 +66,34 @@ const LandingSection = () => {
         <Box p={6} rounded="md" w="100%">
           <form onSubmit={formik.handleSubmit}>
             <VStack spacing={4}>
-              <FormControl isInvalid={formik.errors.firstName}>
+              <FormControl
+                isInvalid={
+                  !!formik.errors.firstName && formik.touched.firstName
+                }
+              >
                 <FormLabel htmlFor="firstName">Name</FormLabel>
                 <Input
                   id="firstName"
                   name="firstName"
-                  value={formik.values.firstName}
-                  onChange={formik.handleChange}
+                  {...formik.getFieldProps('firstName')}
                 />
-                <FormErrorMessage>Required  min of two characters</FormErrorMessage>
+                <FormErrorMessage>{formik.errors.firstName}</FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={formik.errors.email} >
+              <FormControl
+                isInvalid={!!formik.errors.email && formik.touched.email}
+              >
                 <FormLabel htmlFor="email">Email Address</FormLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  value={formik.values.email}
-                  onChange={formik.handleChange}
+                  {...formik.getFieldProps('email')}
                 />
-                <FormErrorMessage>Required</FormErrorMessage>
+                <FormErrorMessage>{formik.errors.email}</FormErrorMessage>
               </FormControl>
               <FormControl>
                 <FormLabel htmlFor="type">Type of enquiry</FormLabel>
-                <Select id="type" name="type" onChange={formik.handleChange}>
+                <Select id="type" name="type" {...formik.getFieldProps('type')}>
                   <option value="hireMe">Freelance project proposal</option>
                   <option value="openSource">
                     Open source consultancy session
@@ -89,19 +101,25 @@ const LandingSection = () => {
                   <option value="other">Other</option>
                 </Select>
               </FormControl>
-              <FormControl isInvalid={formik.errors.Comment}>
-                <FormLabel htmlFor="Comment">Your message</FormLabel>
+              <FormControl
+                isInvalid={!!formik.errors.comment && formik.touched.comment}
+              >
+                <FormLabel htmlFor="comment">Your message</FormLabel>
                 <Textarea
-                  id="Comment"
-                  name="Comment"
+                  id="comment"
+                  name="comment"
                   height={250}
-                  value={formik.values.Comment}
-                  onChange={formik.handleChange}
+                  {...formik.getFieldProps('comment')}
                 />
-                <FormErrorMessage>Required</FormErrorMessage>
+                <FormErrorMessage>{formik.errors.comment}</FormErrorMessage>
               </FormControl>
-              <Button type="submit" colorScheme="purple" width="full" >
-              {isLoading ? "isLoading..." : "Submit"}
+              <Button
+                type="submit"
+                colorScheme="purple"
+                width="full"
+                isLoading={isLoading}
+              >
+                Submit
               </Button>
             </VStack>
           </form>
@@ -111,4 +129,4 @@ const LandingSection = () => {
   );
 };
 
-export default LandingSection;
+export default ContactMeSection;

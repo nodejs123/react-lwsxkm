@@ -1,96 +1,93 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import React, { useEffect, useRef } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import {
   faGithub,
   faLinkedin,
   faMedium,
   faStackOverflow,
-} from "@fortawesome/free-brands-svg-icons";
-import { Box, HStack } from "@chakra-ui/react";
+} from '@fortawesome/free-brands-svg-icons';
+import { Box, HStack } from '@chakra-ui/react';
 
 const socials = [
   {
     icon: faEnvelope,
-    url: "mailto: hello@example.com",
+    url: 'mailto: hello@example.com',
   },
   {
     icon: faGithub,
-    url: "https://github.com",
+    url: 'https://www.github.com/sureskills',
   },
   {
     icon: faLinkedin,
-    url: "https://www.linkedin.com",
+    url: 'https://www.linkedin.com/in/sureskills/',
   },
   {
     icon: faMedium,
-    url: "https://medium.com",
+    url: 'https://medium.com/@sureskills',
   },
   {
     icon: faStackOverflow,
-    url: "https://stackoverflow.com",
+    url: 'https://stackoverflow.com/users/sureskills',
   },
 ];
 
-
+/**
+ * This component illustrates the use of both the useRef hook and useEffect hook.
+ * The useRef hook is used to create a reference to a DOM element, in order to tweak the header styles and run a transition animation.
+ * The useEffect hook is used to perform a subscription when the component is mounted and to unsubscribe when the component is unmounted.
+ * Additionally, it showcases a neat implementation to smoothly navigate to different sections of the page when clicking on the header elements.
+ */
 const Header = () => {
-  
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    let prevScrollPos = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      const headerElement = headerRef.current;
+      if (!headerElement) {
+        return;
+      }
+      if (prevScrollPos > currentScrollPos) {
+        headerElement.style.transform = 'translateY(0)';
+      } else {
+        headerElement.style.transform = 'translateY(-200px)';
+      }
+      prevScrollPos = currentScrollPos;
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const handleClick = (anchor) => () => {
     const id = `${anchor}-section`;
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+        behavior: 'smooth',
+        block: 'start',
       });
     }
   };
-
-// const [show, setShow] = useState(true);
-const [lastScrollY, setLastScrollY] = useState(0);
-const yposition =useRef(0);
-
-const controlNavbar = () => {
-    if (typeof window !== 'undefined') { 
-      if (window.scrollY > lastScrollY) { // if scroll down hide the navbar
-        yposition.current=-200; 
-      } else { // if scroll up show the navbar
-        yposition.current=0; 
-      }
-
-      // remember current page location to use in the next move
-      setLastScrollY(window.scrollY); 
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', controlNavbar);
-
-      // cleanup function
-      return () => {
-        window.removeEventListener('scroll', controlNavbar);
-      };
-    }
-  }, [lastScrollY]);
-
-
-
   return (
     <Box
       position="fixed"
       top={0}
       left={0}
       right={0}
-      // translateY={0}
+      translateY={0}
       transitionProperty="transform"
-      transitionDuration=".5s"
+      transitionDuration=".3s"
       transitionTimingFunction="ease-in-out"
       backgroundColor="#18181b"
-
-      transform="auto" translateY={yposition.current} //transform="auto" needed to make dynamic transformations work properly
+      ref={headerRef}
     >
-      <Box color="white" maxWidth="1280px" margin="0 auto" >
+      <Box color="white" maxWidth="1280px" margin="0 auto">
         <HStack
           px={16}
           py={4}
@@ -98,31 +95,27 @@ const controlNavbar = () => {
           alignItems="center"
         >
           <nav>
-            {/* Add social media links based on the `socials` data */}
             <HStack spacing={8}>
-            <a href={socials[0].url}>
-              <FontAwesomeIcon icon={socials[0].icon} size="2x" />
-            </a>
-            <a href={socials[1].url}>
-              <FontAwesomeIcon icon={socials[1].icon} size="2x" />
-            </a>
-            <a href={socials[2].url}>
-              <FontAwesomeIcon icon={socials[2].icon} size="2x" />
-            </a>
-            <a href={socials[3].url}>
-              <FontAwesomeIcon icon={socials[3].icon} size="2x" />
-            </a>
-            <a href={socials[4].url}>
-              <FontAwesomeIcon icon={socials[4].icon} size="2x" />
-            </a>
+              {socials.map(({ icon, url }) => (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FontAwesomeIcon icon={icon} size="2x" key={url} />
+                </a>
+              ))}
             </HStack>
-
           </nav>
           <nav>
             <HStack spacing={8}>
-              {/* Add links to Projects and Contact me section */}
-              <a href="/#projects-section" onClick={handleClick()} >Projects</a>
-              <a href="/#contactme-section" onClick={handleClick()}>Contact Me</a>
+              <a href="#projects" onClick={handleClick('projects')}>
+                Projects
+              </a>
+              <a href="#contactme" onClick={handleClick('contactme')}>
+                Contact Me
+              </a>
             </HStack>
           </nav>
         </HStack>
@@ -130,4 +123,5 @@ const controlNavbar = () => {
     </Box>
   );
 };
+
 export default Header;
